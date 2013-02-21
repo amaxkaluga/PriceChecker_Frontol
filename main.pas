@@ -66,13 +66,14 @@ uses pFIBProps, StrUtils;
 {$R *.dfm}
 const
   ESC = #27;
-
+{
 function  ParseFormat(FormatStr: string):string;
 var
-
+  s:string;
 begin
-
+//
 end;
+}
 
 procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
 begin
@@ -96,10 +97,16 @@ var
   tmpl_price,
   tmpl_summ,
   tmpl_qnt:Extended;
+  good_qnt:Extended;
   good_name: String;
   good_price: Currency;
+  good_total: Currency;
   Retn_Str: String;
 begin
+
+  BarCodeTmpl := TStringList.Create;
+  BarCodeTmpl2 := TStringList.Create;
+
   with AThread.Connection do
     While Connected do begin
 
@@ -115,7 +122,9 @@ begin
           memo_log.Lines.Add('< '+LCmd);
 
           good_name := 'Товар не найден.';
+          good_qnt   := 0;
           good_price := 0;
+          good_total := 0;
 
           if fp_db.Connected then
             begin
@@ -130,8 +139,6 @@ begin
               if fp_qry_GetIntBC.RecordCount>0 then begin
                 //Разбор шаблона
                 BarCodeTmplName := fp_qry_GetIntBC.FN('NAME').AsString;
-                BarCodeTmpl := TStringList.Create;
-                BarCodeTmpl2 := TStringList.Create;
                 Split('|', fp_qry_GetIntBC.FN('DATA').AsString, BarCodeTmpl);
                 BarCodeTmplPos := 1;
                 for counter:=0 to BarCodeTmpl.Count-1 do begin
@@ -183,23 +190,41 @@ begin
                     good_price := tmpl_summ
                   else
                     if tmpl_qnt>0 then
-                      if tmpl_price>0 then
-                        good_price := tmpl_price
-                      else
-                        good_price := good_price * tmpl_qnt;
-                good_price := RoundTo(good_price, -2);
+                      begin
+                        good_qnt := tmpl_qnt;
+                        if tmpl_price>0 then
+                          good_total := tmpl_price
+                        else
+                          good_total := good_price * tmpl_qnt;
+                      end;
+                good_total := RoundTo(good_total, -2);
               end
             end
           else
             begin
               good_name := 'База не подключена';
-              good_price := 0;
           end;
           //good_name := WrapText(good_name, #13, ['.',' ',#9,'-'], 18); //Разбить на строки по 18 символов
-          good_name := MidStr(good_name, 1, 18)+#13+MidStr(good_name, 1+18, 18)+#13+MidStr(good_name, 1+18+18, 18);
-          Retn_Str := #27'B0'#27'%' +good_name+
-                      #27'B1'#27'.6'+'Цена'+#3+#27'B1'#27'.8'+
-                                     floattostr(good_price)+#3;
+          if good_qnt=0 then
+            begin
+              good_name := MidStr(good_name, 1, 18)+#13+MidStr(good_name, 1+18, 18)+#13+MidStr(good_name, 1+18+18, 18);
+              Retn_Str := #27'B0'#27'%' +good_name+
+                          #27'B1'#27'.6'+'Сумма'+#3+#27'B1'#27'.8'+ floattostr(good_total)+#3;
+            end
+          else
+            begin
+              good_name := MidStr(good_name, 1, 18)+#13+MidStr(good_name, 1+18, 18)+#13+MidStr(good_name, 1+18+18, 18);
+              BarCodeTmpl.Clear;
+              BarCodeTmpl.Delimiter     := #13;
+              BarCodeTmpl.DelimitedText := good_name;
+              while BarCodeTmpl.Count<3 do
+                BarCodeTmpl.DelimitedText := BarCodeTmpl.DelimitedText + #13;
+              BarCodeTmpl[2] := floattostr(good_price) + '*' + floattostr(good_qnt);
+
+              Retn_Str := #27'B0'#27'%' + BarCodeTmpl.DelimitedText +
+                          #27'B1'#27'.6'+'Сумма'+#3+#27'B1'#27'.8'+ floattostr(good_total)+#3;
+            end;
+
           memo_log.Lines.add('> '+Retn_Str);
           WriteLn(Retn_Str);
 

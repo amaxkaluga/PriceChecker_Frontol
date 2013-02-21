@@ -1,6 +1,6 @@
 object Form_Posrednik: TForm_Posrednik
-  Left = 224
-  Top = 649
+  Left = 994
+  Top = 624
   BorderStyle = bsDialog
   Caption = #1055#1086#1089#1088#1077#1076#1085#1080#1082' '#1060#1088#1086#1085#1090#1086#1083'<>Shutttle'
   ClientHeight = 322

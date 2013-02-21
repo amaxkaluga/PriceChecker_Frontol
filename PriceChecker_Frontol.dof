@@ -94,7 +94,7 @@ OutputDir=
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=
+SearchPath=C:\_A_Max_\_Distr_\Delphi\fp6
 Packages=vcl;rtl;vclx;vcldb;vclshlctrls;indy;VclNewlyext
 Conditionals=
 DebugSourceDirs=
@@ -125,42 +125,9 @@ Locale=1049
 CodePage=1251
 [Version Info Keys]
 FileVersion=1.0.0.0
-[Excluded Packages]
-c:\program files\borland\delphi7\Bin\dclsmpedit70.bpl=Borland Editor Script Enhancements
-c:\program files\borland\delphi7\Bin\dclemacsedit70.bpl=Borland Editor Emacs Enhancements
-c:\program files\borland\delphi7\Bin\dbwebxprt.bpl=Borland Web Wizard Package
-C:\Program Files\Borland\Delphi7\Bin\dclbde70.bpl=Borland BDE DB Components
-C:\Program Files\Borland\Delphi7\Bin\dcldb70.bpl=Borland Database Components
-c:\program files\borland\delphi7\Bin\dclmlwiz70.bpl=Borland Markup Language Wizards
-c:\program files\borland\delphi7\Bin\applet70.bpl=Borland Control Panel Applet Package
-c:\program files\borland\delphi7\Bin\dclite70.bpl=Borland Integrated Translation Environment
-c:\program files\borland\delphi7\Bin\dclclxstd70.bpl=Borland CLX Standard Components
-c:\program files\borland\delphi7\Bin\dclclxdb70.bpl=Borland CLX Database Components
-c:\program files\borland\delphi7\Bin\dclact70.bpl=Borland ActionBar Components
-c:\program files\borland\delphi7\Bin\dcl31w70.bpl=Delphi 1.0 Compatibility Components
-c:\program files\borland\delphi7\Bin\dclnet70.bpl=Borland Internet Components
-c:\program files\borland\delphi7\Bin\dclie70.bpl=Internet Explorer Components
-c:\program files\borland\delphi7\Bin\dclwbm70.bpl=Borland InternetExpress Components
-c:\program files\borland\delphi7\Bin\dclsockets70.bpl=Borland Socket Components
-c:\program files\borland\delphi7\Bin\dclsoap70.bpl=Borland SOAP Components
-c:\program files\borland\delphi7\Bin\dclwebsnap70.bpl=Borland WebSnap Components
-c:\program files\borland\delphi7\Bin\dclado70.bpl=Borland ADO DB Components
-c:\program files\borland\delphi7\Bin\dcldbx70.bpl=Borland dbExpress Components
-c:\program files\borland\delphi7\Bin\dclmid70.bpl=Borland MyBase DataAccess Components
-c:\program files\borland\delphi7\Bin\dclmcn70.bpl=Borland DataSnap Connection Components
-c:\program files\borland\delphi7\Bin\dcldbxcds70.bpl=Borland SimpleDataset Component (DBX)
-c:\program files\borland\delphi7\Bin\dclib70.bpl=InterBase Data Access Components
-c:\program files\borland\delphi7\Bin\ibevnt70.bpl=Borland Interbase Event Alerter Component
-c:\program files\borland\delphi7\Bin\dcltee70.bpl=TeeChart Components
-c:\program files\borland\delphi7\Bin\dcldss70.bpl=Borland Decision Cube Components
-c:\program files\borland\delphi7\Bin\dclsmp70.bpl=Borland Sample Components
-c:\program files\borland\delphi7\Bin\dclocx70.bpl=Borland Sample Imported ActiveX Controls
-c:\program files\borland\delphi7\Bin\dclofficexp70.bpl=Microsoft Office XP Sample Automation Server Wrapper Components
-c:\program files\borland\delphi7\Bin\dclqrt70.bpl=QuickReport Components
-c:\program files\borland\delphi7\Bin\dcltqr70.bpl=TeeChart for QuickReport Components
-c:\program files\borland\delphi7\Bin\dclRave70.bpl=Rave Reports BE 5.0 Package
-c:\program files\borland\delphi7\Bin\dclIntraweb_50_70.bpl=Intraweb 5.0 Design Package for Delphi 7
-c:\program files\borland\delphi7\Bin\DCLNMF70.bpl=NetMasters Fastnet Tools
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=C:\_A_Max_\_Distr_\Delphi\fp6
