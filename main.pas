@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Psock, Sockets, StdCtrls, IdTCPServer, IdBaseComponent, IniFiles,
+  Dialogs, Sockets, StdCtrls, IdTCPServer, IdBaseComponent, IniFiles,
   IdComponent, DB, FIBDatabase, pFIBDatabase, FIBQuery, pFIBQuery,
   ComCtrls, ExtCtrls, ImgList, Math;
 
@@ -66,20 +66,67 @@ uses pFIBProps, StrUtils;
 {$R *.dfm}
 const
   ESC = #27;
-{
-function  ParseFormat(FormatStr: string):string;
-var
-  s:string;
-begin
-//
-end;
-}
+  CR = #13;
 
-procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
+procedure StrSplit(Str: string; Delimiter: Char; ListOfStrings: TStrings) ;
 begin
    ListOfStrings.Clear;
    ListOfStrings.Delimiter     := Delimiter;
    ListOfStrings.DelimitedText := Str;
+end;
+
+procedure StrSplitW(Str, Delimiter: string; Width, Count:integer) ;
+var
+  ResultStr:string;
+  PosD:integer;
+begin
+  PosD:=1;
+  while (count>0) and (PosD<Length(str)) do begin
+    ResultStr := MidStr(Str, PosD, Width) + Delimiter;
+    inc(PosD, Width);
+    dec(Count);
+  end;
+end;
+
+function  ParseFormat(FormatStr, name: string; price, total:Currency; qnt:Extended):string;
+var
+  ResultStr:string;
+  CmdStr:string;
+  EscPos, EscPosEnd:integer;
+  ParamI_1, ParamI_2, ParamI_3:integer;
+  ParamS_1, ParamS_2, ParamS_3:staring;
+  ParamS: TStrings;
+
+begin
+  ResultStr := '';
+  EscPos := PosEx(FormatStr, '#', 1);
+  if EscPos=0 Then
+    ResultStr := FormatStr
+  else
+    While EscPos>0 do begin
+      ResultStr := ResultStr +  LeftStr(FormatStr, EscPos);
+      Inc(EscPos);
+      EscPosEnd := PosEx(FormatStr, '#', EscPos);
+      Assert(EscPosEnd=0, 'Не закрыта команда #');
+
+      CmdStr := MidStr(FormatStr, EscPos, EscPosEnd-EscPos);
+
+      if PosEx(FormatStr, 'name', EscPos)=EscPos Then begin
+        ParamS := 
+        ParamI_1 := 0;
+        StrSplit();
+        if FormatStr[EscPos+4]=':' Then
+      end
+      else if PosEx(FormatStr, 'price', EscPos)=EscPos Then begin
+      end
+      else if PosEx(FormatStr, 'total', EscPos)=EscPos Then begin
+      end
+      else if PosEx(FormatStr, 'qnt', EscPos)=EscPos Then begin
+      end;
+
+      FormatStr := MidStr(FormatStr, EscPosEnd+1, Length(FormatStr));
+      EscPos := Pos(FormatStr, '#');
+    end;
 end;
 
 procedure TForm_Posrednik.idtcpsrvr1Execute(AThread: TIdPeerThread);
@@ -139,10 +186,10 @@ begin
               if fp_qry_GetIntBC.RecordCount>0 then begin
                 //Разбор шаблона
                 BarCodeTmplName := fp_qry_GetIntBC.FN('NAME').AsString;
-                Split('|', fp_qry_GetIntBC.FN('DATA').AsString, BarCodeTmpl);
+                StrSplit(fp_qry_GetIntBC.FN('DATA').AsString, '|', BarCodeTmpl);
                 BarCodeTmplPos := 1;
                 for counter:=0 to BarCodeTmpl.Count-1 do begin
-                  Split(';', BarCodeTmpl[counter], BarCodeTmpl2);
+                  StrSplit(BarCodeTmpl[counter], ';', BarCodeTmpl2);
                   BarCodeTmplLen := StrToIntDef(BarCodeTmpl2[1], 0);
                   case BarCodeTmpl2[0][1] of
                     '0'://код
