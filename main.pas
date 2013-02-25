@@ -75,17 +75,28 @@ begin
    ListOfStrings.DelimitedText := Str;
 end;
 
-procedure StrSplitW(Str, Delimiter: string; Width, Count:integer) ;
+function StrSplitW(Str, Delimiter: string; Width, Count:integer):string;
 var
   ResultStr:string;
   PosD:integer;
 begin
   PosD:=1;
+  if count=0 then count:=1000;
   while (count>0) and (PosD<Length(str)) do begin
     ResultStr := MidStr(Str, PosD, Width) + Delimiter;
     inc(PosD, Width);
     dec(Count);
   end;
+  StrSplitW := ResultStr;
+end;
+
+function NumFormat(num:Extended; Precision, Digits:integer):string;
+  StrSplit(CmdStr, ':', ParamS);
+  ParamI_1 := 0; ParamI_2 := 0;
+  if ParamS.Count>1 then ParamI_1 := StrToIntDef(ParamS[1], 4);
+  if ParamS.Count>2 then ParamI_2 := StrToIntDef(ParamS[2], 2);
+
+  ResultStr := ResultStr + FloatToStrF(price, ffFixed, )
 end;
 
 function  ParseFormat(FormatStr, name: string; price, total:Currency; qnt:Extended):string;
@@ -94,11 +105,12 @@ var
   CmdStr:string;
   EscPos, EscPosEnd:integer;
   ParamI_1, ParamI_2, ParamI_3:integer;
-  ParamS_1, ParamS_2, ParamS_3:staring;
+  Param, ParamS_1, ParamS_2, ParamS_3:string;
   ParamS: TStrings;
 
 begin
   ResultStr := '';
+  ParamS := TStrings.Create;
   EscPos := PosEx(FormatStr, '#', 1);
   if EscPos=0 Then
     ResultStr := FormatStr
@@ -112,12 +124,24 @@ begin
       CmdStr := MidStr(FormatStr, EscPos, EscPosEnd-EscPos);
 
       if PosEx(FormatStr, 'name', EscPos)=EscPos Then begin
-        ParamS := 
-        ParamI_1 := 0;
-        StrSplit();
-        if FormatStr[EscPos+4]=':' Then
+        StrSplit(CmdStr, ':', ParamS);
+        ParamI_1 := 0; ParamI_2 := 0;
+        if ParamS.Count>1 then ParamI_1 := StrToIntDef(ParamS[1], 0);
+        if ParamS.Count>2 then ParamI_2 := StrToIntDef(ParamS[2], 0);
+
+        if ParamI_1>0 then
+          ResultStr := ResultStr + StrSplitW(name, #13, ParamI_1, ParamI_2)
+        else
+          ResultStr := ResultStr + name;
+
       end
       else if PosEx(FormatStr, 'price', EscPos)=EscPos Then begin
+        StrSplit(CmdStr, ':', ParamS);
+        ParamI_1 := 0; ParamI_2 := 0;
+        if ParamS.Count>1 then ParamI_1 := StrToIntDef(ParamS[1], 4);
+        if ParamS.Count>2 then ParamI_2 := StrToIntDef(ParamS[2], 2);
+
+        ResultStr := ResultStr + FloatToStrF(price, ffFixed, )
       end
       else if PosEx(FormatStr, 'total', EscPos)=EscPos Then begin
       end
