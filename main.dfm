@@ -1,6 +1,6 @@
 object Form_Posrednik: TForm_Posrednik
-  Left = 149
-  Top = 491
+  Left = 384
+  Top = 396
   BorderStyle = bsDialog
   Caption = #1055#1086#1089#1088#1077#1076#1085#1080#1082' '#1060#1088#1086#1085#1090#1086#1083'<>Shutttle'
   ClientHeight = 322
@@ -211,28 +211,48 @@ object Form_Posrednik: TForm_Posrednik
     object TabSheet1: TTabSheet
       Caption = #1064#1072#1073#1083#1086#1085
       ImageIndex = 3
-      object Memo_template: TMemo
+      object Memo_tmpl_regular: TMemo
         Left = 8
         Top = 56
         Width = 425
         Height = 225
-        Lines.Strings = (
-          'Memo_template')
         TabOrder = 0
+      end
+      object RGrp_tmpl: TRadioGroup
+        Left = 8
+        Top = 8
+        Width = 369
+        Height = 41
+        Caption = #1042#1080#1076' '#1096#1072#1073#1083#1086#1085#1072':'
+        Columns = 2
+        ItemIndex = 0
+        Items.Strings = (
+          #1054#1073#1099#1095#1085#1099#1081
+          #1042#1077#1089#1086#1074#1086#1081)
+        TabOrder = 1
+        OnClick = RGrp_tmplClick
+      end
+      object Memo_tmpl_weight: TMemo
+        Left = 8
+        Top = 56
+        Width = 425
+        Height = 225
+        TabOrder = 2
+        Visible = False
+      end
+      object btn_Help: TBitBtn
+        Left = 384
+        Top = 16
+        Width = 51
+        Height = 33
+        TabOrder = 3
+        OnClick = btn_HelpClick
+        Kind = bkHelp
       end
     end
   end
-  object idtcpsrvr1: TIdTCPServer
-    Bindings = <>
-    CommandHandlers = <>
-    DefaultPort = 30576
-    Greeting.NumericCode = 0
-    MaxConnectionReply.NumericCode = 0
-    OnExecute = idtcpsrvr1Execute
-    ReplyExceptionCode = 0
-    ReplyTexts = <>
-    ReplyUnknownCommand.NumericCode = 0
-    Left = 416
+  object ImageList1: TImageList
+    Left = 288
   end
   object fp_db: TpFIBDatabase
     DBParams.Strings = (
@@ -246,6 +266,11 @@ object Form_Posrednik: TForm_Posrednik
     WaitForRestoreConnect = 0
     AfterConnect = fp_dbAfterConnect
     Left = 320
+  end
+  object fp_transaction: TpFIBTransaction
+    DefaultDatabase = fp_db
+    TimeoutAction = TARollback
+    Left = 352
   end
   object fp_qry_FindWareByBC: TpFIBQuery
     Transaction = fp_transaction
@@ -270,14 +295,6 @@ object Form_Posrednik: TForm_Posrednik
     qoAutoCommit = True
     qoStartTransaction = True
   end
-  object fp_transaction: TpFIBTransaction
-    DefaultDatabase = fp_db
-    TimeoutAction = TARollback
-    Left = 352
-  end
-  object ImageList1: TImageList
-    Left = 288
-  end
   object fp_qry_GetIntBC: TpFIBQuery
     Transaction = fp_transaction
     Database = fp_db
@@ -287,8 +304,20 @@ object Form_Posrednik: TForm_Posrednik
         'UBSTRING(:BARCODE FROM 1 FOR 2) AND INTBARCS.PREFIXEND<=SUBSTRIN' +
         'G(:BARCODE FROM 1 FOR 2) AND LEN(CAST(:BARCODE AS VARCHAR(40)))=' +
         '"LENGTH"')
-    Left = 380
-    Top = 48
+    Left = 348
+    Top = 40
     qoStartTransaction = True
+  end
+  object idtcpsrvr1: TIdTCPServer
+    Bindings = <>
+    CommandHandlers = <>
+    DefaultPort = 30576
+    Greeting.NumericCode = 0
+    MaxConnectionReply.NumericCode = 0
+    OnExecute = idtcpsrvr1Execute
+    ReplyExceptionCode = 0
+    ReplyTexts = <>
+    ReplyUnknownCommand.NumericCode = 0
+    Left = 416
   end
 end

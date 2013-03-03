@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Sockets, StdCtrls, IdTCPServer, IdBaseComponent, IniFiles,
   IdComponent, DB, FIBDatabase, pFIBDatabase, FIBQuery, pFIBQuery,
-  ComCtrls, ExtCtrls, ImgList, Math;
+  ComCtrls, ExtCtrls, ImgList, Math, EncdDecd, Buttons;
 
 type
   TForm_Posrednik = class(TForm)
@@ -38,9 +38,12 @@ type
     Label6: TLabel;
     NET_Param_Port: TEdit;
     TabSheet1: TTabSheet;
-    Memo_template: TMemo;
+    Memo_tmpl_regular: TMemo;
     NET_Status: TShape;
     fp_qry_GetIntBC: TpFIBQuery;
+    RGrp_tmpl: TRadioGroup;
+    Memo_tmpl_weight: TMemo;
+    btn_Help: TBitBtn;
     procedure idtcpsrvr1Execute(AThread: TIdPeerThread);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -50,6 +53,8 @@ type
     procedure SaveParamsToFile();
     procedure ConnectDB();
     procedure fp_dbBeforeDisconnect(Sender: TObject);
+    procedure RGrp_tmplClick(Sender: TObject);
+    procedure btn_HelpClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -70,87 +75,115 @@ const
 
 procedure StrSplit(Str: string; Delimiter: Char; ListOfStrings: TStrings) ;
 begin
-   ListOfStrings.Clear;
-   ListOfStrings.Delimiter     := Delimiter;
-   ListOfStrings.DelimitedText := Str;
+  Str := StringReplace(Str, #10, '', [rfReplaceAll]);
+  Str := StringReplace(Str, #13, '', [rfReplaceAll]);
+  ListOfStrings.Clear;
+  ListOfStrings.Delimiter     := Delimiter;
+  ListOfStrings.DelimitedText := Str;
 end;
 
 function StrSplitW(Str, Delimiter: string; Width, Count:integer):string;
 var
-  ResultStr:string;
   PosD:integer;
 begin
+
   PosD:=1;
+  Result := '';
+
   if count=0 then count:=1000;
+
   while (count>0) and (PosD<Length(str)) do begin
-    ResultStr := MidStr(Str, PosD, Width) + Delimiter;
+    Result := Result + MidStr(Str, PosD, Width) + Delimiter;
     inc(PosD, Width);
     dec(Count);
   end;
-  StrSplitW := ResultStr;
+
 end;
 
-function NumFormat(num:Extended; Precision, Digits:integer):string;
-  StrSplit(CmdStr, ':', ParamS);
-  ParamI_1 := 0; ParamI_2 := 0;
-  if ParamS.Count>1 then ParamI_1 := StrToIntDef(ParamS[1], 4);
-  if ParamS.Count>2 then ParamI_2 := StrToIntDef(ParamS[2], 2);
+function NumFormat(num:Extended; var ParamS:TStrings):string; overload;
+var
+  Precision, Digits:integer;
+begin
+  Precision := 10; Digits := 2;
+  if ParamS.Count>1 then Digits := StrToIntDef(ParamS[2], 2);
+  if ParamS.Count>2 then Precision := StrToIntDef(ParamS[1], 10);
 
-  ResultStr := ResultStr + FloatToStrF(price, ffFixed, )
+  result := FloatToStrF(num, ffFixed, Precision, Digits);
 end;
+
+function NumFormat(num:Extended; var ParamS:TStrings; Precision, Digits:integer):string; overload;
+begin
+  if ParamS.Count>1 then Digits := StrToIntDef(ParamS[1], Digits);
+  if ParamS.Count>2 then Precision := StrToIntDef(ParamS[2], Precision);
+
+  result := FloatToStrF(num, ffFixed, Precision, Digits);
+end;
+
+Function IsNumber(Var Number:integer; S:String):Boolean;//функция проверяет, является ли строка числом
+Var
+  Err:Integer;
+Begin
+  Err := 0;
+  S := LowerCase(Trim(S));
+  try
+    Number := StrToInt(S);
+  except
+    Err := 1;
+  end;
+  IsNumber :=  Err = 0;
+End;
 
 function  ParseFormat(FormatStr, name: string; price, total:Currency; qnt:Extended):string;
 var
-  ResultStr:string;
-  CmdStr:string;
-  EscPos, EscPosEnd:integer;
-  ParamI_1, ParamI_2, ParamI_3:integer;
-  Param, ParamS_1, ParamS_2, ParamS_3:string;
-  ParamS: TStrings;
-
+  Counter, ParamI_1, ParamI_2:integer;
+  Param, ParamS_1:string;
+  ParamS, ParamS2: TStrings;
+  CurrentMode: integer;
 begin
-  ResultStr := '';
-  ParamS := TStrings.Create;
-  EscPos := PosEx(FormatStr, '#', 1);
-  if EscPos=0 Then
-    ResultStr := FormatStr
-  else
-    While EscPos>0 do begin
-      ResultStr := ResultStr +  LeftStr(FormatStr, EscPos);
-      Inc(EscPos);
-      EscPosEnd := PosEx(FormatStr, '#', EscPos);
-      Assert(EscPosEnd=0, 'Не закрыта команда #');
+  Result := '';
+  ParamS := TStringList.Create;
+  ParamS2 := TStringList.Create;
+  CurrentMode:=0; //0-текст 1-комманда
 
-      CmdStr := MidStr(FormatStr, EscPos, EscPosEnd-EscPos);
+  StrSplit(FormatStr, '#', ParamS);
+  for Counter:=0 to ParamS.Count-1 do begin
+    Param := ParamS[Counter];
+    if CurrentMode=0 then
+      CurrentMode:=1
+    else begin
+      CurrentMode := 0;
+      Param := Trim(LowerCase(Param));
+      if Length(Param)=0 then
+        Param := '#'
+      else
+      if IsNumber(ParamI_1, Param) then
+        Param := chr(ParamI_1)
+      else begin
+        StrSplit(Param, ':', ParamS2);
+        ParamS_1 := ParamS2[0];
+        if ParamS_1='name' then begin
+          ParamI_1 := 0; ParamI_2 := 0;
+          if ParamS2.Count>1 then ParamI_1 := StrToIntDef(ParamS2[1], 0);
+          if ParamS2.Count>2 then ParamI_2 := StrToIntDef(ParamS2[2], 0);
 
-      if PosEx(FormatStr, 'name', EscPos)=EscPos Then begin
-        StrSplit(CmdStr, ':', ParamS);
-        ParamI_1 := 0; ParamI_2 := 0;
-        if ParamS.Count>1 then ParamI_1 := StrToIntDef(ParamS[1], 0);
-        if ParamS.Count>2 then ParamI_2 := StrToIntDef(ParamS[2], 0);
-
-        if ParamI_1>0 then
-          ResultStr := ResultStr + StrSplitW(name, #13, ParamI_1, ParamI_2)
+          if ParamI_1>0 then
+            Param := StrSplitW(name, #13, ParamI_1, ParamI_2)
+          else
+            Param := name;
+        end
         else
-          ResultStr := ResultStr + name;
-
-      end
-      else if PosEx(FormatStr, 'price', EscPos)=EscPos Then begin
-        StrSplit(CmdStr, ':', ParamS);
-        ParamI_1 := 0; ParamI_2 := 0;
-        if ParamS.Count>1 then ParamI_1 := StrToIntDef(ParamS[1], 4);
-        if ParamS.Count>2 then ParamI_2 := StrToIntDef(ParamS[2], 2);
-
-        ResultStr := ResultStr + FloatToStrF(price, ffFixed, )
-      end
-      else if PosEx(FormatStr, 'total', EscPos)=EscPos Then begin
-      end
-      else if PosEx(FormatStr, 'qnt', EscPos)=EscPos Then begin
+        if ParamS_1='price' then
+          Param := NumFormat(price, ParamS2, 15, 2)
+        else
+        if ParamS_1='total' then
+          Param := NumFormat(total, ParamS2, 15, 2)
+        else
+        if ParamS_1='qnt' then
+          Param := NumFormat(qnt, ParamS2, 15, 4)
       end;
-
-      FormatStr := MidStr(FormatStr, EscPosEnd+1, Length(FormatStr));
-      EscPos := Pos(FormatStr, '#');
     end;
+    Result := Result + Param;
+  end;
 end;
 
 procedure TForm_Posrednik.idtcpsrvr1Execute(AThread: TIdPeerThread);
@@ -307,6 +340,7 @@ end;
 procedure TForm_Posrednik.LoadParamsFromFile();
 Var
   iniFile:TIniFile;
+  S:String;
 begin
   iniFile := TIniFile.Create( ChangeFileExt(Application.ExeName, '.ini') );
   db_Param_Path.Text := iniFile.ReadString('DATABASE', 'Path', 'localhost:d:\atol\db\');
@@ -316,6 +350,14 @@ begin
   db_Param_Password.Text := iniFile.ReadString('DATABASE', 'Password','masterkey');
 
   NET_Param_Port.Text:= iniFile.ReadString('NET', 'Port','30576');
+  S := iniFile.ReadString('TEMPLATE', 'Regular', '');
+  if Length(S)=0 then S := '#27#B0#27#%#name:18:3##27#B1#27#.6Сумма#3##27#B1#27#.8#total:2##3#'
+                 else S := DecodeString(S);
+  Memo_tmpl_regular.Text := S;
+  S := iniFile.ReadString('TEMPLATE', 'Weight', '');
+  if Length(S)=0 then S := '#27#B0#27#%#name:18:3##27#B1#27#.6Сумма#3##27#B1#27#.8#total:2##3#'
+                 else S := DecodeString(S);
+  Memo_tmpl_weight.Text := S;
 end;
 
 procedure TForm_Posrednik.SaveParamsToFile();
@@ -328,8 +370,9 @@ begin
   iniFile.WriteString('DATABASE', 'LOG', db_Param_Log.Text);
   iniFile.WriteString('DATABASE', 'User', db_Param_User.Text);
   iniFile.WriteString('DATABASE', 'Password', db_Param_Password.Text);
-
   iniFile.WriteString('NET', 'Port', NET_Param_Port.Text);
+  iniFile.WriteString('TEMPLATE', 'Regular', EncodeString(Memo_tmpl_regular.Text));
+  iniFile.WriteString('TEMPLATE', 'Weight', EncodeString(Memo_tmpl_weight.Text));
 end;
 
 procedure TForm_Posrednik.ConnectDB();
@@ -382,6 +425,23 @@ procedure TForm_Posrednik.fp_dbBeforeDisconnect(Sender: TObject);
 begin
   db_Status.Brush.Color := clRed;
   db_Status.Hint := 'Нет подключения';
+end;
+
+procedure TForm_Posrednik.RGrp_tmplClick(Sender: TObject);
+begin
+  Memo_tmpl_regular.Visible := RGrp_tmpl.ItemIndex=0;
+  Memo_tmpl_weight.Visible  := RGrp_tmpl.ItemIndex=1;
+end;
+
+procedure TForm_Posrednik.btn_HelpClick(Sender: TObject);
+var
+  f:Textfile;
+begin
+  AssignFile(f, 'c:\1.txt');
+  Rewrite(f);
+  Write(f, ParseFormat(Memo_tmpl_regular.Text, 'qwe wer we w werwerwer  wer wer wer we rwerwer', 1.23, 12.34, 0.1234));
+  closeFile(f);
+  //Application.MessageBox(PChar(IntToStr(strtoIntDef(Memo_tmpl_regular.Lines[0], 0))), 'xxx');
 end;
 
 end.
