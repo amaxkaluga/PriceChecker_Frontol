@@ -70,7 +70,7 @@ var
 
 implementation
 
-uses pFIBProps, StrUtils;
+uses pFIBProps, StrUtils, IdTCPConnection;
 
 {$R *.dfm}
 const
@@ -295,15 +295,13 @@ begin
                   good_name := fp_qry_FindWareByBC.FN('Name').AsString;
                   good_price := fp_qry_FindWareByBC.FN('Price').AsCurrency;
                   if tmpl_summ>0 then
-                    good_price := tmpl_summ
+                    good_total := tmpl_summ
                   else
                     if tmpl_qnt>0 then
                       begin
                         good_qnt := tmpl_qnt;
-                        if tmpl_price>0 then
-                          good_total := tmpl_price
-                        else
-                          good_total := good_price * tmpl_qnt;
+                        if tmpl_price>0 then good_price := tmpl_price;
+                        good_total := good_price * good_qnt;
                       end;
                 good_total := RoundTo(good_total, -2);
               end
@@ -320,6 +318,7 @@ begin
 
           memo_log.Lines.add('> '+Retn_Str);
 
+          Write(Retn_Str); //Возвращаем на терминал
         end;
 
     end;
