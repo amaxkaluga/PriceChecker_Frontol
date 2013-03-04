@@ -313,7 +313,7 @@ begin
               good_name := 'База не подключена';
           end;
 
-          if good_qnt=0 then
+          if (good_qnt=0) or (good_qnt=1) then
             Retn_Str := ParseFormat(Edt_Regular.Text, good_name, good_price, good_total, good_qnt)
           else
             Retn_Str := ParseFormat(Edt_Weight.Text, good_name, good_price, good_total, good_qnt);
