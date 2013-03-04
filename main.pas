@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Sockets, StdCtrls, IdTCPServer, IdBaseComponent, IniFiles,
   IdComponent, DB, FIBDatabase, pFIBDatabase, FIBQuery, pFIBQuery,
-  ComCtrls, ExtCtrls, ImgList, Math, EncdDecd, Buttons;
+  ComCtrls, ExtCtrls, ImgList, Math, EncdDecd, Buttons, IdCoderMIME,
+  IdCoder, IdCoder3to4;
 
 type
   TForm_Posrednik = class(TForm)
@@ -38,12 +39,16 @@ type
     Label6: TLabel;
     NET_Param_Port: TEdit;
     TabSheet1: TTabSheet;
-    Memo_tmpl_regular: TMemo;
     NET_Status: TShape;
     fp_qry_GetIntBC: TpFIBQuery;
-    RGrp_tmpl: TRadioGroup;
-    Memo_tmpl_weight: TMemo;
     btn_Help: TBitBtn;
+    IdEncoder: TIdEncoderMIME;
+    IdDecoder: TIdDecoderMIME;
+    Label7: TLabel;
+    Edt_Regular: TEdit;
+    Label8: TLabel;
+    Edt_Weight: TEdit;
+    chk_Minimize: TCheckBox;
     procedure idtcpsrvr1Execute(AThread: TIdPeerThread);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -53,7 +58,6 @@ type
     procedure SaveParamsToFile();
     procedure ConnectDB();
     procedure fp_dbBeforeDisconnect(Sender: TObject);
-    procedure RGrp_tmplClick(Sender: TObject);
     procedure btn_HelpClick(Sender: TObject);
   private
     { Private declarations }
@@ -308,29 +312,13 @@ begin
             begin
               good_name := 'База не подключена';
           end;
-          //good_name := WrapText(good_name, #13, ['.',' ',#9,'-'], 18); //Разбить на строки по 18 символов
-          if good_qnt=0 then
-            begin
-              good_name := MidStr(good_name, 1, 18)+#13+MidStr(good_name, 1+18, 18)+#13+MidStr(good_name, 1+18+18, 18);
-              Retn_Str := #27'B0'#27'%' +good_name+
-                          #27'B1'#27'.6'+'Сумма'+#3+#27'B1'#27'.8'+ floattostr(good_total)+#3;
-            end
-          else
-            begin
-              good_name := MidStr(good_name, 1, 18)+#13+MidStr(good_name, 1+18, 18)+#13+MidStr(good_name, 1+18+18, 18);
-              BarCodeTmpl.Clear;
-              BarCodeTmpl.Delimiter     := #13;
-              BarCodeTmpl.DelimitedText := good_name;
-              while BarCodeTmpl.Count<3 do
-                BarCodeTmpl.DelimitedText := BarCodeTmpl.DelimitedText + #13;
-              BarCodeTmpl[2] := floattostr(good_price) + '*' + floattostr(good_qnt);
 
-              Retn_Str := #27'B0'#27'%' + BarCodeTmpl.DelimitedText +
-                          #27'B1'#27'.6'+'Сумма'+#3+#27'B1'#27'.8'+ floattostr(good_total)+#3;
-            end;
+          if good_qnt=0 then
+            Retn_Str := ParseFormat(Edt_Regular.Text, good_name, good_price, good_total, good_qnt)
+          else
+            Retn_Str := ParseFormat(Edt_Weight.Text, good_name, good_price, good_total, good_qnt);
 
           memo_log.Lines.add('> '+Retn_Str);
-          WriteLn(Retn_Str);
 
         end;
 
@@ -352,18 +340,28 @@ begin
   NET_Param_Port.Text:= iniFile.ReadString('NET', 'Port','30576');
   S := iniFile.ReadString('TEMPLATE', 'Regular', '');
   if Length(S)=0 then S := '#27#B0#27#%#name:18:3##27#B1#27#.6Сумма#3##27#B1#27#.8#total:2##3#'
-                 else S := DecodeString(S);
-  Memo_tmpl_regular.Text := S;
+                 else S := IdDecoder.DecodeString(S);
+  Edt_Regular.Text := S;
   S := iniFile.ReadString('TEMPLATE', 'Weight', '');
-  if Length(S)=0 then S := '#27#B0#27#%#name:18:3##27#B1#27#.6Сумма#3##27#B1#27#.8#total:2##3#'
-                 else S := DecodeString(S);
-  Memo_tmpl_weight.Text := S;
+  if Length(S)=0 then S := '#27#B0#27#%#name:18:2#Цена:#price:2##27##x2E##x3B#Вес:#qnt:4##3##27#B1#27#.6Сумма#3##27#B1#27#.8#total:2##3#'
+                 else S := IdDecoder.DecodeString(S);
+  Edt_Weight.Text := S;
+
+  if iniFile.ReadString('GENERIC', 'Minimized','0')='0' then begin
+    Form_Posrednik.WindowState := wsNormal;
+    chk_Minimize.State := cbUnChecked;
+  end else begin
+    Form_Posrednik.WindowState := wsMinimized;
+    chk_Minimize.State := cbChecked;
+  end;
+
 end;
 
 procedure TForm_Posrednik.SaveParamsToFile();
 Var
   iniFile:TIniFile;
 begin
+
   iniFile := TIniFile.Create( ChangeFileExt(Application.ExeName, '.ini') );
   iniFile.WriteString('DATABASE', 'Path', db_Param_Path.Text);
   iniFile.WriteString('DATABASE', 'DB', db_Param_DB.Text);
@@ -371,8 +369,13 @@ begin
   iniFile.WriteString('DATABASE', 'User', db_Param_User.Text);
   iniFile.WriteString('DATABASE', 'Password', db_Param_Password.Text);
   iniFile.WriteString('NET', 'Port', NET_Param_Port.Text);
-  iniFile.WriteString('TEMPLATE', 'Regular', EncodeString(Memo_tmpl_regular.Text));
-  iniFile.WriteString('TEMPLATE', 'Weight', EncodeString(Memo_tmpl_weight.Text));
+  iniFile.WriteString('TEMPLATE', 'Regular', IdEncoder.Encode(Edt_Regular.Text));
+  iniFile.WriteString('TEMPLATE', 'Weight', IdEncoder.Encode(Edt_Weight.Text));
+  if chk_Minimize.State=cbChecked then
+    iniFile.WriteString('GENERIC', 'Minimized', '1')
+  else
+    iniFile.WriteString('GENERIC', 'Minimized', '0');
+
 end;
 
 procedure TForm_Posrednik.ConnectDB();
@@ -427,20 +430,14 @@ begin
   db_Status.Hint := 'Нет подключения';
 end;
 
-procedure TForm_Posrednik.RGrp_tmplClick(Sender: TObject);
-begin
-  Memo_tmpl_regular.Visible := RGrp_tmpl.ItemIndex=0;
-  Memo_tmpl_weight.Visible  := RGrp_tmpl.ItemIndex=1;
-end;
-
 procedure TForm_Posrednik.btn_HelpClick(Sender: TObject);
-var
-  f:Textfile;
+{var
+  f:Textfile;}
 begin
-  AssignFile(f, 'c:\1.txt');
+{  AssignFile(f, 'c:\1.txt');
   Rewrite(f);
   Write(f, ParseFormat(Memo_tmpl_regular.Text, 'qwe wer we w werwerwer  wer wer wer we rwerwer', 1.23, 12.34, 0.1234));
-  closeFile(f);
+  closeFile(f);}
   //Application.MessageBox(PChar(IntToStr(strtoIntDef(Memo_tmpl_regular.Lines[0], 0))), 'xxx');
 end;
 

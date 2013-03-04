@@ -1,6 +1,6 @@
 object Form_Posrednik: TForm_Posrednik
-  Left = 384
-  Top = 396
+  Left = 261
+  Top = 627
   BorderStyle = bsDialog
   Caption = #1055#1086#1089#1088#1077#1076#1085#1080#1082' '#1060#1088#1086#1085#1090#1086#1083'<>Shutttle'
   ClientHeight = 322
@@ -21,7 +21,7 @@ object Form_Posrednik: TForm_Posrednik
     Top = 0
     Width = 448
     Height = 322
-    ActivePage = TabSheet1
+    ActivePage = TbSht_Log
     Align = alClient
     TabOrder = 0
     object TbSht_Log: TTabSheet
@@ -31,11 +31,19 @@ object Form_Posrednik: TForm_Posrednik
         294)
       object memo_log: TMemo
         Left = 0
-        Top = 0
+        Top = 32
         Width = 440
-        Height = 294
+        Height = 262
         Anchors = [akLeft, akTop, akRight, akBottom]
         TabOrder = 0
+      end
+      object chk_Minimize: TCheckBox
+        Left = 0
+        Top = 8
+        Width = 200
+        Height = 17
+        Caption = #1057#1074#1086#1088#1072#1095#1080#1074#1072#1090#1100' '#1087#1088#1080' '#1079#1072#1087#1091#1089#1082#1077
+        TabOrder = 1
       end
     end
     object TbSht_DB: TTabSheet
@@ -211,43 +219,51 @@ object Form_Posrednik: TForm_Posrednik
     object TabSheet1: TTabSheet
       Caption = #1064#1072#1073#1083#1086#1085
       ImageIndex = 3
-      object Memo_tmpl_regular: TMemo
+      DesignSize = (
+        440
+        294)
+      object Label7: TLabel
         Left = 8
-        Top = 56
-        Width = 425
-        Height = 225
-        TabOrder = 0
+        Top = 48
+        Width = 52
+        Height = 13
+        Caption = #1054#1073#1099#1095#1085#1099#1081':'
       end
-      object RGrp_tmpl: TRadioGroup
+      object Label8: TLabel
         Left = 8
-        Top = 8
-        Width = 369
-        Height = 41
-        Caption = #1042#1080#1076' '#1096#1072#1073#1083#1086#1085#1072':'
-        Columns = 2
-        ItemIndex = 0
-        Items.Strings = (
-          #1054#1073#1099#1095#1085#1099#1081
-          #1042#1077#1089#1086#1074#1086#1081)
-        TabOrder = 1
-        OnClick = RGrp_tmplClick
-      end
-      object Memo_tmpl_weight: TMemo
-        Left = 8
-        Top = 56
-        Width = 425
-        Height = 225
-        TabOrder = 2
-        Visible = False
+        Top = 112
+        Width = 45
+        Height = 13
+        Caption = #1042#1077#1089#1086#1074#1086#1081':'
       end
       object btn_Help: TBitBtn
         Left = 384
         Top = 16
         Width = 51
         Height = 33
-        TabOrder = 3
+        TabOrder = 0
         OnClick = btn_HelpClick
         Kind = bkHelp
+      end
+      object Edt_Regular: TEdit
+        Left = 8
+        Top = 64
+        Width = 425
+        Height = 49
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        TabOrder = 1
+        Text = 'Edt_Regular'
+      end
+      object Edt_Weight: TEdit
+        Left = 8
+        Top = 128
+        Width = 425
+        Height = 49
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        TabOrder = 2
+        Text = 'Edit1'
       end
     end
   end
@@ -319,5 +335,15 @@ object Form_Posrednik: TForm_Posrednik
     ReplyTexts = <>
     ReplyUnknownCommand.NumericCode = 0
     Left = 416
+  end
+  object IdEncoder: TIdEncoderMIME
+    FillChar = '-'
+    Left = 276
+    Top = 144
+  end
+  object IdDecoder: TIdDecoderMIME
+    FillChar = '-'
+    Left = 340
+    Top = 144
   end
 end
