@@ -294,15 +294,17 @@ begin
               if fp_qry_FindWareByBC.RecordCount>0 then begin
                   good_name := fp_qry_FindWareByBC.FN('Name').AsString;
                   good_price := fp_qry_FindWareByBC.FN('Price').AsCurrency;
-                  if tmpl_summ>0 then
-                    good_total := tmpl_summ
-                  else
-                    if tmpl_qnt>0 then
-                      begin
-                        good_qnt := tmpl_qnt;
-                        if tmpl_price>0 then good_price := tmpl_price;
-                        good_total := good_price * good_qnt;
-                      end;
+                  good_qnt := 1;
+                  good_total := good_price;
+
+                  if tmpl_price>0 then good_price := tmpl_price;
+                  if tmpl_summ>0 then good_total := tmpl_summ;
+                  if tmpl_qnt>0 then
+                    begin
+                      good_qnt := tmpl_qnt;
+                      if tmpl_price>0 then good_price := tmpl_price;
+                      good_total := good_price * good_qnt;
+                    end;
                 good_total := RoundTo(good_total, -2);
               end
             end
