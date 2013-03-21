@@ -323,6 +323,8 @@ begin
           Write(Retn_Str); //Возвращаем на терминал
         end;
 
+        Application.ProcessMessages;
+        
     end;
 end;
 
