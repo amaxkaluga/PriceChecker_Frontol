@@ -227,6 +227,28 @@ begin
 
       if Length(LCmd)<>0 then
         begin
+
+          if Pos('FF', LCmd)=1 then counter:=2  //EAN
+          else
+          if Pos('P', LCmd)=1 then counter:=2   //UPC-E
+          else
+            counter:=1;
+
+          BarCode := copy(LCmd, counter+1, 50);
+
+          {case LCmd[1] of
+            'F':if LCmd[2]='F' then BarCode := copy(LCmd, 3, 50) //EAN-8
+                               else BarCode := copy(LCmd, 2, 50);//EAN-13
+            'A':BarCode := copy(LCmd, 2, 50) //UPC-A
+            'E':BarCode := copy(LCmd, 3, 50) //UPC-E
+            'i':BarCode := copy(LCmd, 2, 50) //ITF
+            '*':BarCode := copy(LCmd, 2, 50) //Code 39/32
+            '%':BarCode := copy(LCmd, 2, 50) //Codabar
+            '#':BarCode := copy(LCmd, 2, 50) //Code128
+            'P':BarCode := copy(LCmd, 3, 50) //EAN-128
+            'R':BarCode := copy(LCmd, 2, 50) //DataBar
+          end;}
+
           memo_log.Lines.Add('< '+LCmd);
 
           good_name := 'Товар не найден.';
@@ -236,7 +258,6 @@ begin
 
           if fp_db.Connected then
             begin
-              BarCode := copy(LCmd, 2, 50);
               tmpl_code:='';
               tmpl_barcode:=BarCode;
               tmpl_price:=0;
